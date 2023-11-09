@@ -3,41 +3,54 @@ defmodule Processes do
     receive do
       {:halt} ->
         IO.puts("Server1 #{self()}: Halting")
+
         case Process.whereis({:worker, :pid2}) do
-            nil ->
-                IO.puts("Process not found.")
-            registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
-                send(registered_pid, {:halt})
-            end
+          nil ->
+            IO.puts("Process not found.")
+
+          registered_pid ->
+            IO.puts("Found registered process: #{registered_pid}")
+            send(registered_pid, {:halt})
+        end
+
         :ok
-      {:'add', x, y} ->
+
+      {:add, x, y} ->
         IO.puts("Server1 (#{self()}): Math handling: #{x} + #{y} = #{x + y}")
         math()
-      {:'sub', x, y} ->
+
+      {:sub, x, y} ->
         IO.puts("Server1 (#{self()}): Math handling: #{x} - #{y} = #{x - y}")
         math()
-      {:'mult', x, y} ->
+
+      {:mult, x, y} ->
         IO.puts("Server1 (#{self()}): Math handling: #{x} * #{y} = #{x * y}")
         math()
-      {:'div', x, y} ->
+
+      {:div, x, y} ->
         IO.puts("Server1 (#{self()}): Math handling: #{x} / #{y} = #{x / y}")
         math()
-      {:'neg', x} ->
+
+      {:neg, x} ->
         IO.puts("Server1 (#{self()}): Math negation handling: #{x} = #{-x}")
         math()
-      {:'sqrt', x} ->
+
+      {:sqrt, x} ->
         IO.puts("Server1 (#{self()}): Math sqrt handling: #{x} = #{:math.sqrt(x)}")
         math()
+
       something_else ->
         IO.puts("Server1 (#{self()}) passed #{something_else} down to next server!")
+
         case Process.whereis({:worker, :pid2}) do
-            nil ->
-                IO.puts("Process not found.")
-            registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
-                send(registered_pid,something_else)
-            end
+          nil ->
+            IO.puts("Process not found.")
+
+          registered_pid ->
+            IO.puts("Found registered process: #{registered_pid}")
+            send(registered_pid, something_else)
+        end
+
         math()
     end
   end
@@ -46,31 +59,40 @@ defmodule Processes do
     receive do
       {:halt} ->
         IO.puts("Server2 (#{self()}): Halting")
+
         case Process.whereis({:worker, :pid3}) do
-            nil ->
-                IO.puts("Process not found.")
-            registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
-                send(registered_pid, {:halt})
-            end
+          nil ->
+            IO.puts("Process not found.")
+
+          registered_pid ->
+            IO.puts("Found registered process: #{registered_pid}")
+            send(registered_pid, {:halt})
+        end
+
         :ok
+
       [head | tail] when is_integer(head) ->
         result = Enum.sum([head | tail])
         IO.puts("Server2 (#{self()}): handing addition of list elements = #{result}")
         list()
+
       [head | tail] when is_float(head) ->
         result = multiply([head | tail])
         IO.puts("Server2 (#{self()}): handing multiplication of list elements = #{result}")
         list()
+
       something_else_tho ->
         IO.puts("Server2 (#{self()}) passed down to next server! #{something_else_tho}")
+
         case Process.whereis({:worker, :pid3}) do
-            nil ->
-                IO.puts("Process not found.")
-            registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
-                send(registered_pid, something_else_tho)
-            end
+          nil ->
+            IO.puts("Process not found.")
+
+          registered_pid ->
+            IO.puts("Found registered process: #{registered_pid}")
+            send(registered_pid, something_else_tho)
+        end
+
         list()
     end
   end
@@ -85,9 +107,11 @@ defmodule Processes do
         IO.puts("Server3 (#{self()}): Halting")
         IO.puts("Server3 (#{self()}): #{current_count} unprocessed items!")
         :ok
+
       {:error, x} ->
         IO.puts("Server3 (#{self()}) - Error: #{x}")
         third_one(current_count)
+
       something_new ->
         IO.puts("Server3 (#{self()}) - Not handled: #{something_new}")
         updated_count = current_count + 1
@@ -117,17 +141,24 @@ defmodule Processes do
   end
 
   defp main_loop(pid1) do
-    IO.write("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: ")
+    IO.write(
+      "Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: "
+    )
+
     message = IO.gets("")
 
     case String.trim(message) do
       "all_done" ->
         make_request(pid1, {:halt})
+
       "halt" ->
         make_request(pid1, {:halt})
+
       _ ->
         make_request(pid1, String.to_existing_atom(message))
         main_loop(pid1)
     end
   end
 end
+
+Processes.start()
