@@ -91,7 +91,7 @@ defmodule Processes do
         IO.puts("Server3 (#{inspect(self())}) - Not handled: (#{inspect(something_new)})")
         updated_count = current_count + 1
         third_one(updated_count)
-        
+
     end
   end
 
@@ -131,7 +131,9 @@ defmodule Processes do
         message = elem(Code.eval_string(message),0)
         make_request(pid1, message)
         main_loop(pid1)
-       1>0 -> make_request(pid1, message)
+       1>0 -> 
+       make_request(pid1, message)
+       main_loop(pid1)
     end
   end
 end
