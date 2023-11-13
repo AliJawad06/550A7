@@ -2,12 +2,12 @@ defmodule Processes do
   def math do
     receive do
       {:halt} ->
-        IO.puts("Server1 #{self()}: Halting")
-        case Process.whereis({:worker, :pid2}) do
+        IO.puts("Server1 (#{inspect(self())}): Halting")
+        case Process.whereis(:pid2) do
             nil ->
                 IO.puts("Process not found.")
             registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
+                IO.puts("Found registered process: #{inspect(registered_pid)}")
                 send(registered_pid, {:halt})
             end
         :ok
@@ -35,7 +35,6 @@ defmodule Processes do
             nil ->
                 IO.puts("Process not found.")
             registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
                 send(registered_pid,something_else)
             end
         math()
@@ -46,11 +45,11 @@ defmodule Processes do
     receive do
       {:halt} ->
         IO.puts("Server2 (#{inspect(self())}): Halting")
-        case Process.whereis({:worker, :pid3}) do
+        case Process.whereis(:pid3) do
             nil ->
                 IO.puts("Process not found.")
             registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
+                IO.puts("Found registered process: #{inspect(registered_pid)}")
                 send(registered_pid, {:halt})
             end
         :ok
@@ -64,11 +63,11 @@ defmodule Processes do
         list()
       something_else_tho ->
         IO.puts("Server2 (#{inspect(self())}) passed down to next server! #{something_else_tho}")
-        case Process.whereis({:worker, :pid3}) do
+        case Process.whereis(:pid3) do
             nil ->
                 IO.puts("Process not found.")
             registered_pid ->
-                IO.puts("Found registered process: #{registered_pid}")
+                IO.puts("Found registered process: #{inspect(registered_pid)}")
                 send(registered_pid, something_else_tho)
             end
         list()
@@ -118,15 +117,19 @@ defmodule Processes do
 
   def main_loop(pid1) do
     message =  String.trim(IO.gets("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: "))
+    if is_tuple(elem(Code.eval_string(message),0)) do
     message = elem(Code.eval_string(message),0)
-    case message do
-      "all_done" ->
-        make_request(pid1, {:halt})
-      "halt" ->
-        make_request(pid1, {:halt})
-      _ ->
-        make_request(pid1, message)
-        main_loop(pid1)
+    end 
+    if is_list(elem(Code.eval_string(message),0)) do
+    message = elem(Code.eval_string(message),0)
+    end 
+        IO.puts("Halting #{inspect(message)}")
+
+    if message == "'halt'" do
+    make_request(pid1, {:halt})
+    end
+    if message == "'all_done'" do
+    make_request(pid1, {:halt})
     end
   end
 end
