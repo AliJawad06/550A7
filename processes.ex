@@ -62,7 +62,7 @@ defmodule Processes do
         IO.puts("Server2 (#{inspect(self())}): handing multiplication of list elements = #{result}")
         list()
       something_else_tho ->
-        IO.puts("Server2 (#{inspect(self())}) passed down to next server! #{something_else_tho}")
+        IO.puts("Server2 (#{inspect(self())}) passed down to next server! (#{inspect(something_else_tho)})")
         case Process.whereis(:pid3) do
             nil ->
                 IO.puts("Process not found.")
@@ -88,9 +88,10 @@ defmodule Processes do
         IO.puts("Server3 (#{inspect(self())}) - Error: #{x}")
         third_one(current_count)
       something_new ->
-        IO.puts("Server3 (#{inspect(self())}) - Not handled: #{something_new}")
+        IO.puts("Server3 (#{inspect(self())}) - Not handled: (#{inspect(something_new)})")
         updated_count = current_count + 1
         third_one(updated_count)
+        
     end
   end
 
@@ -130,6 +131,7 @@ defmodule Processes do
         message = elem(Code.eval_string(message),0)
         make_request(pid1, message)
         main_loop(pid1)
+       1>0 -> make_request(pid1, message)
     end
   end
 end
