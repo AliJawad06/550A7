@@ -117,19 +117,18 @@ defmodule Processes do
 
   def main_loop(pid1) do
     message =  String.trim(IO.gets("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: "))
-    if is_tuple(elem(Code.eval_string(message),0)) do
-    message = elem(Code.eval_string(message),0)
-    end 
-    if is_list(elem(Code.eval_string(message),0)) do
-    message = elem(Code.eval_string(message),0)
-    end 
-        IO.puts("Halting #{inspect(message)}")
-
-    if message == "'halt'" do
-    make_request(pid1, {:halt})
-    end
-    if message == "'all_done'" do
-    make_request(pid1, {:halt})
+    cond do 
+      message == "'halt'" ->  make_request(pid1, {:halt})
+      message == "'all_done'" ->  make_request(pid1, {:halt})
+      is_tuple(elem(Code.eval_string(message),0)) ->
+        message = elem(Code.eval_string(message),0)
+        make_request(pid1, message)
+        main_loop(pid1)
+      
+      is_list(elem(Code.eval_string(message),0)) ->
+        message = elem(Code.eval_string(message),0)
+        make_request(pid1, message)
+        main_loop(pid1)
     end
   end
 end
