@@ -11,16 +11,16 @@ defmodule Processes do
                 send(registered_pid, {:halt})
             end
         :ok
-      {:'add', x, y} ->
+      {:add, x, y} ->
         IO.puts("Server1 (#{inspect(self())}): Math handling: #{x} + #{y} = #{x + y}")
         math()
-      {:'sub', x, y} ->
+      {:sub, x, y} ->
         IO.puts("Server1 (#{inspect(self())}): Math handling: #{x} - #{y} = #{x - y}")
         math()
-      {:'mult', x, y} ->
+      {:mult, x, y} ->
         IO.puts("Server1 (#{inspect(self())}): Math handling: #{x} * #{y} = #{x * y}")
         math()
-      {:'div', x, y} ->
+      {:div, x, y} ->
         IO.puts("Server1 (#{inspect(self())}): Math handling: #{x} / #{y} = #{x / y}")
         math()
       {:'neg', x} ->
@@ -117,9 +117,8 @@ defmodule Processes do
   end
 
   def main_loop(pid1) do
-    IO.write("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: ")
-    message = String.to_atom(IO.gets(""))
-
+    message =  String.trim(IO.gets("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: "))
+    message = elem(Code.eval_string(message),0)
     case message do
       "all_done" ->
         make_request(pid1, {:halt})
