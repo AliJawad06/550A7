@@ -30,7 +30,7 @@ defmodule Processes do
         IO.puts("Server1 (#{inspect(self())}): Math sqrt handling: #{x} = #{:math.sqrt(x)}")
         math()
       something_else ->
-        IO.puts("Server1 (#{inspect(self())}) passed #{something_else} down to next server!")
+        IO.puts("Server1 (#{inspect(self())}) passed (#{inspect(something_else)}) down to next server!")
         case Process.whereis(:pid2) do
             nil ->
                 IO.puts("Process not found.")
@@ -118,14 +118,15 @@ defmodule Processes do
   def main_loop(pid1) do
     message =  String.trim(IO.gets("Note: Since div is a keyword in Erlang,\nyou MUST provide it in this format: {:div, x, y} (enclose :div in atoms)\nEnter operation (ex. {:add, x, y}, [x, y, z]) or type 'all_done' or 'halt' to exit: "))
     cond do 
-      message == "'halt'" ->  make_request(pid1, {:halt})
-      message == "'all_done'" ->  make_request(pid1, {:halt})
+      message == "halt" ->  make_request(pid1, {:halt})
+      message == "all_done" ->  make_request(pid1, {:halt})
       is_tuple(elem(Code.eval_string(message),0)) ->
+        IO.puts("is tuple")
         message = elem(Code.eval_string(message),0)
         make_request(pid1, message)
         main_loop(pid1)
-      
       is_list(elem(Code.eval_string(message),0)) ->
+        IO.puts("is list")
         message = elem(Code.eval_string(message),0)
         make_request(pid1, message)
         main_loop(pid1)
